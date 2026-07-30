@@ -73,8 +73,8 @@ test("searches settings globally and opens the matching setting", async () => {
     expect(app.captureCharFrame()).not.toContain("Animations")
     await app.waitFor(() => app.renderer.currentFocusedEditor instanceof InputRenderable)
 
-    for (const key of "side") app.mockInput.pressKey(key)
-    await app.waitForFrame((frame) => frame.includes("Sidebar"))
+    for (const key of "image preview") app.mockInput.pressKey(key)
+    await app.waitForFrame((frame) => frame.includes("Image previews"))
     expect(app.captureCharFrame()).not.toContain("New session")
     expect(app.captureCharFrame()).not.toContain("Switch model")
     expect(app.captureCharFrame()).not.toContain("Markdown")
@@ -82,7 +82,7 @@ test("searches settings globally and opens the matching setting", async () => {
     app.mockInput.pressEnter()
     await app.waitForFrame((frame) => frame.includes("Settings") && frame.includes("Color mode"))
     app.mockInput.pressEnter()
-    await app.waitFor(() => current.session?.sidebar === "hide")
+    await app.waitFor(() => current.prompt?.image_preview === true)
   } finally {
     app.renderer.destroy()
   }
