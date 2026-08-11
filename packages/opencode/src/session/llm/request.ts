@@ -178,6 +178,20 @@ export const prepare = Effect.fn("LLMRequestPrep.prepare")(function* (input: Pre
     ? (yield* InstanceState.context).project.id
     : undefined
 
+  // Request-class hint for downstream routers (e.g. a local/cloud proxy) that
+  // would otherwise have to reverse-engineer the class from the request body.
+  // Fits the existing x-opencode-* header convention. Derived from the agent
+  // OpenCode already selected for the call: the `compaction` agent is the
+  // compaction lane, `title`/`summary` (and any small-model call) are the
+  // chore lane, everything else is a main turn. Emitted on every provider; an
+  // inert, ignorable header anywhere but a router that reads it.
+  const requestClass =
+    input.agent.name === "compaction"
+      ? "compaction"
+      : input.agent.name === "title" || input.agent.name === "summary" || input.small
+        ? "chore"
+        : "main"
+
   return {
     system,
     messages,
@@ -185,6 +199,8 @@ export const prepare = Effect.fn("LLMRequestPrep.prepare")(function* (input: Pre
     params,
     messageTransformOptions: options,
     headers: {
+      "x-opencode-class": requestClass,
+      "x-opencode-agent": input.agent.name,
       ...(input.model.providerID.startsWith("opencode")
         ? {
             ...(opencodeProjectID ? { "x-opencode-project": opencodeProjectID } : {}),
